@@ -953,7 +953,14 @@
         .fallback-panel-center .fallback-face { border-radius: 6px; }
         .fallback-panel-right .fallback-face { border-radius: 4px 20px 20px 4px; }
         .fallback-back { transform: rotateY(180deg); background: linear-gradient(145deg,#202023 0%,#101012 48%,#080809 100%); }
-        .fallback-screen { position:absolute; inset:0; opacity:0; background: linear-gradient(135deg,#e0c3fc,#8ec5fc); transition: opacity .12s linear; }
+        .fallback-screen {
+            position:absolute;
+            inset:0;
+            opacity:0;
+            background:#ffffff;
+            transition:opacity .45s cubic-bezier(.22,1,.36,1);
+            box-shadow:inset 0 0 22px rgba(255,255,255,.75);
+        }
         .fallback-edge { position:absolute; left:0; width:100%; height:var(--center-thickness); background:linear-gradient(#050506,#343438 50%,#080809); backface-visibility:hidden; }
         .fallback-edge-top { top:calc(var(--center-thickness)/-2); transform:rotateX(90deg); }
         .fallback-edge-bottom { bottom:calc(var(--center-thickness)/-2); transform:rotateX(-90deg); }
@@ -1134,7 +1141,7 @@
                     left.style.transform = `translateZ(${29*(1-lp)+2}px) rotateY(${180*(1-lp)}deg)`;
                     right.style.transform = `translateZ(${15*(1-rp)+1}px) rotateY(${-180*(1-rp)}deg)`;
                     body.style.transform = `rotateX(${3.2-3.8*progress}deg) rotateY(${-7.5+12*progress}deg) rotateZ(${-Math.sin(progress*Math.PI)*.7}deg)`;
-                    const on = ease(remap(progress,.91,1));
+                    const on = ease(remap(progress,.975,1));
                     screens.forEach(el => el.style.opacity = on);
                     lenses.forEach((el,i)=>el.style.setProperty('--lens-reflect', `${-100 + ((progress*230+i*22)%230)}%`));
                     shadow.style.width = `${150+210*((lp+rp)/2)}px`;
@@ -1173,6 +1180,7 @@
         }
 
         if (THREE) {
+
 
         const clamp01 = value => Math.max(0, Math.min(1, value));
         const remap = (value, start, end) => clamp01((value - start) / (end - start));
@@ -1237,49 +1245,6 @@
             return shape;
         }
 
-        function makeScreenTexture(label, accent) {
-            const c = document.createElement('canvas');
-            c.width = 768;
-            c.height = 1536;
-            const ctx = c.getContext('2d');
-            const g = ctx.createLinearGradient(0, 0, c.width, c.height);
-            g.addColorStop(0, '#d8c4ff');
-            g.addColorStop(.45, '#a8d5ff');
-            g.addColorStop(1, '#f1f4ff');
-            ctx.fillStyle = g;
-            ctx.fillRect(0, 0, c.width, c.height);
-
-            const glow = ctx.createRadialGradient(550, 360, 30, 550, 360, 540);
-            glow.addColorStop(0, 'rgba(255,255,255,.92)');
-            glow.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = glow;
-            ctx.fillRect(0, 0, c.width, c.height);
-
-            ctx.fillStyle = 'rgba(255,255,255,.54)';
-            ctx.beginPath();
-            ctx.roundRect(70, 210, 628, 740, 40);
-            ctx.fill();
-            ctx.fillStyle = '#1d1d1f';
-            ctx.font = '600 42px -apple-system, BlinkMacSystemFont, sans-serif';
-            ctx.fillText(label, 70, 112);
-            ctx.fillStyle = accent;
-            ctx.beginPath();
-            ctx.arc(652, 98, 13, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = 'rgba(29,29,31,.10)';
-            [0,1,2,3,4].forEach((_, i) => {
-                ctx.beginPath();
-                ctx.roundRect(112, 286 + i * 92, i === 2 ? 350 : 500, 18, 9);
-                ctx.fill();
-            });
-
-            const texture = new THREE.CanvasTexture(c);
-            texture.colorSpace = THREE.SRGBColorSpace;
-            texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-            return texture;
-        }
-
         function makeReflectionTexture() {
             const c = document.createElement('canvas');
             c.width = 256;
@@ -1298,12 +1263,6 @@
             return texture;
         }
 
-        const screenTextures = [
-            makeScreenTexture('Workspace', '#0071e3'),
-            makeScreenTexture('Trifold', '#1d1d1f'),
-            makeScreenTexture('Entertainment', '#f59e0b')
-        ];
-
         const frameMaterial = new THREE.MeshPhysicalMaterial({
             color: 0x09090a,
             roughness: .34,
@@ -1320,10 +1279,9 @@
         });
 
         const screens = [];
-        const screenGlows = [];
         const cameraReflections = [];
 
-        function createPanel(name, thickness, texture, withCamera = false) {
+        function createPanel(name, thickness, withCamera = false) {
             const group = new THREE.Group();
             group.name = name;
 
@@ -1347,9 +1305,7 @@
             const screenGeo = new THREE.ShapeGeometry(screenShape, 28);
             const screenMat = new THREE.MeshPhysicalMaterial({
                 color: 0x000000,
-                map: texture,
                 emissive: 0xffffff,
-                emissiveMap: texture,
                 emissiveIntensity: 0,
                 roughness: .18,
                 metalness: 0,
@@ -1362,19 +1318,6 @@
             group.add(screen);
             screens.push(screen);
 
-            // 점등 직전 가장자리에서만 보이는 OLED bloom 유사 레이어
-            const glowMat = new THREE.MeshBasicMaterial({
-                color: 0xbddcff,
-                transparent: true,
-                opacity: 0,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-            const glow = new THREE.Mesh(screenGeo.clone(), glowMat);
-            glow.scale.set(1.012, 1.006, 1);
-            glow.position.z = thickness / 2 + .59;
-            group.add(glow);
-            screenGlows.push(glow);
 
             if (withCamera) {
                 const bumpShape = roundedRectShape(30, 30, 5.5);
@@ -1442,24 +1385,25 @@
             return group;
         }
 
-        const centerPanel = createPanel('center', panelSpecs.center.thickness, screenTextures[1]);
+        const centerPanel = createPanel('center', panelSpecs.center.thickness);
         centerPanel.position.z = panelSpecs.center.depth;
         product.add(centerPanel);
 
         // 힌지 피벗과 패널을 부모-자식으로 연결해 각 면이 실제로 맞물린 상태에서 회전한다.
         const leftPivot = new THREE.Group();
         leftPivot.position.set(-HINGE_X, 0, panelSpecs.left.depth);
-        const leftPanel = createPanel('left-camera', panelSpecs.left.thickness, screenTextures[0], true);
+        const leftPanel = createPanel('left-camera', panelSpecs.left.thickness, true);
         leftPanel.position.x = -(PANEL_STEP - HINGE_X);
         leftPivot.add(leftPanel);
         product.add(leftPivot);
 
         const rightPivot = new THREE.Group();
         rightPivot.position.set(HINGE_X, 0, panelSpecs.right.depth);
-        const rightPanel = createPanel('right', panelSpecs.right.thickness, screenTextures[2]);
+        const rightPanel = createPanel('right', panelSpecs.right.thickness);
         rightPanel.position.x = PANEL_STEP - HINGE_X;
         rightPivot.add(rightPanel);
         product.add(rightPivot);
+
 
         // 힌지 실린더는 기존 금속 느낌을 유지한다.
         const hingeMaterial = new THREE.MeshStandardMaterial({ color: 0x222226, metalness: .92, roughness: .28 });
@@ -1518,6 +1462,8 @@
         let leftVelocity = 0;
         let rightVelocity = 0;
         let lastTime = performance.now();
+        let fullyOpenSince = 0;
+        let actualScreenProgress = 0;
 
         function updateProgress() {
             const rect = stickyContainer.getBoundingClientRect();
@@ -1549,7 +1495,7 @@
 
             const leftProgress = smootherstep(remap(targetProgress, 0.02, 0.53));
             const rightProgress = smootherstep(remap(targetProgress, 0.47, 0.88));
-            const screenProgress = smoothstep(remap(targetProgress, 0.88, 1.0));
+            // 화면 점등은 스크롤 값이 아니라 실제 힌지 각도가 수렴한 뒤 시작한다.
 
             const targetLeft = Math.PI * (1 - leftProgress);
             const targetRight = -Math.PI * (1 - rightProgress);
@@ -1569,13 +1515,31 @@
             product.rotation.z = THREE.MathUtils.degToRad(Math.sin(targetProgress * Math.PI) * -.7);
             product.position.y = 2 + Math.sin(targetProgress * Math.PI) * 2.5;
 
-            // 완전히 펼친 후 검은 OLED가 켜지고, 가장자리 glow가 먼저 반짝인다.
-            screens.forEach((screen, index) => {
-                const delayed = smoothstep(clamp01(screenProgress * 1.14 - index * .07));
-                screen.material.emissiveIntensity = delayed * 1.08;
-                screen.material.color.setScalar(THREE.MathUtils.lerp(0.0, 1.0, delayed));
-                screen.material.opacity = THREE.MathUtils.lerp(.96, 1, delayed);
-                screenGlows[index].material.opacity = Math.sin(delayed * Math.PI) * .22;
+            // 두 힌지가 실제로 거의 0°에 도달한 상태가 일정 시간 유지된 뒤 화면을 켠다.
+            const hingeTolerance = THREE.MathUtils.degToRad(1.25);
+            const hingesPhysicallyOpen =
+                Math.abs(currentLeftAngle) < hingeTolerance &&
+                Math.abs(currentRightAngle) < hingeTolerance &&
+                targetProgress > .94;
+
+            if (hingesPhysicallyOpen) {
+                if (!fullyOpenSince) fullyOpenSince = now;
+            } else {
+                fullyOpenSince = 0;
+            }
+
+            const openHoldProgress = fullyOpenSince
+                ? clamp01((now - fullyOpenSince - 220) / 720)
+                : 0;
+            const targetScreenProgress = smootherstep(openHoldProgress);
+            actualScreenProgress += (targetScreenProgress - actualScreenProgress) * Math.min(1, dt * 8.5);
+
+            // 패널이 완전히 열린 뒤 세 디스플레이를 동시에 흰색으로 점등한다.
+            screens.forEach(screen => {
+                screen.material.color.setScalar(actualScreenProgress);
+                screen.material.emissive.setHex(0xffffff);
+                screen.material.emissiveIntensity = actualScreenProgress * 0.18;
+                screen.material.opacity = 1;
             });
 
             // 렌즈별 시간차가 있는 대각선 reflection
@@ -1605,10 +1569,12 @@
                 caption.textContent = '카메라 패널을 펼치는 중';
             } else if (targetProgress < .86) {
                 caption.textContent = '오른쪽 패널을 펼치는 중';
-            } else if (targetProgress < .94) {
+            } else if (actualScreenProgress < .05) {
                 caption.textContent = '완전히 펼쳐졌습니다';
+            } else if (actualScreenProgress < .98) {
+                caption.textContent = '디스플레이를 흰색으로 점등하는 중';
             } else {
-                caption.textContent = '10인치급 대화면 · 디스플레이 ON';
+                caption.textContent = '10인치급 대화면 · 화이트 디스플레이 ON';
             }
 
             renderer.render(scene, camera);
