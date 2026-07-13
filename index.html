@@ -19,9 +19,18 @@
             --text-gray: #86868b;
             --text-light-gray: #a1a1a6;
             --point-blue: #0071e3;
-            --device-border: #bcbcbf;
-            --device-metal-dark: #8e8e93;
-            --device-back-mat: #e5e5ea;
+            --device-border: #19191b;
+            --device-metal-dark: #09090a;
+            --device-back-mat: #101012;
+
+            /* 실제 폼팩터 비율: 75.0 × 159.2 mm / 214.1 × 159.2 mm */
+            --device-height: 520px;
+            --panel-width: 244.975px; /* 520 × 75 / 159.2 */
+            --panel-offset: 227.173px; /* (520 × 214.1 / 159.2 - panel-width) / 2 */
+            --unfolded-width: 699.322px; /* 520 × 214.1 / 159.2 */
+            --left-thickness: 12.739px;  /* 3.9 mm */
+            --center-thickness: 13.719px; /* 4.2 mm */
+            --right-thickness: 13.065px; /* 4.0 mm */
             --font-apple: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
@@ -138,7 +147,7 @@
             position: absolute;
             bottom: 40px;
             font-size: 12px;
-            color: var(--text-light-gray);
+            color: #5b5b60;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -193,15 +202,15 @@
         /* 밀착 배치용 중앙 제어 바디 앵커 크기 대폭 확장 */
         .trifold-container {
             position: relative;
-            width: 260px;
-            height: 520px;
+            width: var(--panel-width);
+            height: var(--device-height);
             transform-style: preserve-3d;
         }
 
         /* 기기 본체 공통 3D 구조체 (원근 보존 활성화) */
         .trifold-body {
             position: absolute;
-            width: 260px;
+            width: var(--panel-width);
             height: 100%;
             top: 0;
             transform-style: preserve-3d;
@@ -217,7 +226,9 @@
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             border: 6px solid var(--device-border);
-            box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.4);
+            box-shadow:
+                inset 0 0 0 1px rgba(255,255,255,0.055),
+                inset 0 0 12px rgba(255,255,255,0.025);
             transform-style: preserve-3d;
         }
 
@@ -230,7 +241,7 @@
 
         /* 리얼 후면 하드웨어 속성 (알루미늄 바디, 카메라 모듈 등) */
         .face-back {
-            background: linear-gradient(135deg, #f0f0f3 0%, var(--device-back-mat) 100%);
+            background: linear-gradient(145deg, #202023 0%, var(--device-back-mat) 48%, #080809 100%);
             transform: rotateY(180deg);
             z-index: 1;
             display: flex;
@@ -244,9 +255,9 @@
         .trifold-body::before {
             content: '';
             position: absolute;
-            top: -5px; bottom: -5px;
-            width: 14px;
-            background: linear-gradient(to right, #8e8e93, #d1d1d6, #8e8e93);
+            top: 0; bottom: 0;
+            width: var(--center-thickness);
+            background: linear-gradient(to right, #050506, #27272a 48%, #09090a);
             transform-style: preserve-3d;
             z-index: -1;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -257,15 +268,15 @@
             position: absolute;
             left: 0;
             width: 100%;
-            height: 14px;
+            height: var(--center-thickness);
             pointer-events: none;
             backface-visibility: hidden;
             background: linear-gradient(
                 to bottom,
-                #8e8e93 0%,
-                #d8d8dc 35%,
-                #f2f2f4 50%,
-                #a7a7ac 100%
+                #050506 0%,
+                #1d1d20 35%,
+                #343438 50%,
+                #080809 100%
             );
             border-left: 1px solid rgba(0,0,0,0.18);
             border-right: 1px solid rgba(0,0,0,0.18);
@@ -274,24 +285,34 @@
         }
 
         .edge-top {
-            top: -7px;
+            top: calc(var(--center-thickness) / -2);
             transform: rotateX(90deg);
         }
 
         .edge-bottom {
-            bottom: -7px;
+            bottom: calc(var(--center-thickness) / -2);
             transform: rotateX(-90deg);
             background: linear-gradient(
                 to top,
-                #77777c 0%,
-                #bcbcc1 45%,
-                #e7e7ea 100%
+                #030304 0%,
+                #171719 45%,
+                #303034 100%
             );
         }
 
         .panel-left .panel-edge {
+            height: var(--left-thickness);
             border-radius: 12px 2px 2px 12px;
         }
+
+        .panel-left .edge-top { top: calc(var(--left-thickness) / -2); }
+        .panel-left .edge-bottom { bottom: calc(var(--left-thickness) / -2); }
+
+        .panel-center .panel-edge { height: var(--center-thickness); }
+
+        .panel-right .panel-edge { height: var(--right-thickness); }
+        .panel-right .edge-top { top: calc(var(--right-thickness) / -2); }
+        .panel-right .edge-bottom { bottom: calc(var(--right-thickness) / -2); }
 
         .panel-center .panel-edge {
             border-radius: 3px;
@@ -302,14 +323,16 @@
         }
 
         .panel-left::before {
-            left: -14px;
+            width: var(--left-thickness);
+            left: calc(var(--left-thickness) * -1);
             transform: rotateY(-90deg);
             transform-origin: right center;
             border-radius: 4px 0 0 4px;
         }
 
         .panel-right::before {
-            right: -14px;
+            width: var(--right-thickness);
+            right: calc(var(--right-thickness) * -1);
             transform: rotateY(90deg);
             transform-origin: left center;
             border-radius: 0 4px 4px 0;
@@ -328,7 +351,7 @@
 
         /* 카메라 패널: 전체 동작 구간에서 항상 최상단 */
         .panel-left {
-            left: -254px;
+            left: calc(var(--panel-offset) * -1);
             transform-origin: right center;
             z-index: 30;
         }
@@ -339,7 +362,7 @@
 
         /* 우측 패널: 카메라 패널 아래, 중앙 패널 위 */
         .panel-right {
-            left: 254px;
+            left: var(--panel-offset);
             transform-origin: left center;
             z-index: 20;
         }
@@ -352,9 +375,9 @@
         .camera-bump {
             width: 110px;
             height: 110px;
-            background: rgba(255, 255, 255, 0.4);
+            background: linear-gradient(145deg, #242427, #0b0b0c);
             backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.09);
             border-radius: 24px;
             box-shadow: 
                 0 4px 12px rgba(0,0,0,0.06),
@@ -451,7 +474,7 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-            background-size: 765px 510px; /* 전체 가로 크기(255px * 3) 기준 픽셀 고정 */
+            background-size: var(--unfolded-width) var(--device-height); /* 214.1 × 159.2 실제 펼침 비율 */
             opacity: 0.15;
             transition: opacity 0.5s ease;
         }
@@ -462,11 +485,11 @@
         }
 
         .center-wall {
-            background-position: -255px 0px;
+            background-position: calc(var(--panel-offset) * -1) 0px;
         }
 
         .right-wall {
-            background-position: -510px 0px;
+            background-position: calc(var(--panel-offset) * -2) 0px;
             border-radius: 0 14px 14px 0;
         }
 
@@ -858,6 +881,89 @@
             .cta-title { font-size: 32px; }
             .input-group { flex-direction: column; }
         }
+
+
+        /* Three.js 제품 렌더링 영역 */
+        .device-3d-scene {
+            position: relative;
+            width: min(1180px, 100vw);
+            height: min(68vh, 640px);
+            min-height: 460px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: none;
+            isolation: isolate;
+        }
+
+        .device-3d-scene::before {
+            content: '';
+            position: absolute;
+            inset: -18% -12%;
+            background:
+                radial-gradient(circle at var(--light-x, 28%) 38%, rgba(255,255,255,.98) 0%, rgba(255,255,255,.72) 24%, rgba(245,245,247,.42) 48%, rgba(232,232,237,.08) 72%),
+                linear-gradient(180deg, #ffffff 0%, #f5f5f7 55%, #ffffff 100%);
+            transition: background-position .1s linear;
+            z-index: -2;
+        }
+
+        #trifoldCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            outline: none;
+            touch-action: pan-y;
+        }
+
+        .device-stage-caption {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: .02em;
+            color: rgba(29,29,31,.52);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .device-3d-scene {
+                width: 100vw;
+                height: 58vh;
+                min-height: 420px;
+                transform: none;
+            }
+            .animation-title { margin-bottom: 12px; }
+        }
+
+
+        /* Three.js를 불러오지 못했을 때 표시되는 CSS 3D 폴백 */
+        #cssFallback { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; perspective: 2200px; }
+        .fallback-active #trifoldCanvas { display: none; }
+        .fallback-active #cssFallback { display: flex; }
+        .fallback-trifold { position: relative; width: var(--panel-width); height: var(--device-height); transform-style: preserve-3d; }
+        .fallback-panel { position: absolute; inset: 0 auto auto 0; width: var(--panel-width); height: var(--device-height); transform-style: preserve-3d; }
+        .fallback-panel-left { left: calc(var(--panel-offset) * -1); transform-origin: right center; z-index: 30; }
+        .fallback-panel-center { left: 0; z-index: 10; }
+        .fallback-panel-right { left: var(--panel-offset); transform-origin: left center; z-index: 20; }
+        .fallback-face { position: absolute; inset: 0; border: 6px solid var(--device-border); background: #030303; backface-visibility: hidden; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); }
+        .fallback-panel-left .fallback-face { border-radius: 20px 4px 4px 20px; }
+        .fallback-panel-center .fallback-face { border-radius: 6px; }
+        .fallback-panel-right .fallback-face { border-radius: 4px 20px 20px 4px; }
+        .fallback-back { transform: rotateY(180deg); background: linear-gradient(145deg,#202023 0%,#101012 48%,#080809 100%); }
+        .fallback-screen { position:absolute; inset:0; opacity:0; background: linear-gradient(135deg,#e0c3fc,#8ec5fc); transition: opacity .12s linear; }
+        .fallback-edge { position:absolute; left:0; width:100%; height:var(--center-thickness); background:linear-gradient(#050506,#343438 50%,#080809); backface-visibility:hidden; }
+        .fallback-edge-top { top:calc(var(--center-thickness)/-2); transform:rotateX(90deg); }
+        .fallback-edge-bottom { bottom:calc(var(--center-thickness)/-2); transform:rotateX(-90deg); }
+        .fallback-camera { position:absolute; top:24px; left:24px; width:110px; height:110px; border-radius:24px; background:linear-gradient(145deg,#242427,#0b0b0c); display:grid; grid-template-columns:repeat(2,1fr); padding:10px; gap:10px; }
+        .fallback-lens { position:relative; width:38px; height:38px; margin:auto; border-radius:50%; border:3px solid #34343a; background:radial-gradient(circle at 45% 45%,#26384e 0,#040507 48%,#000 75%); overflow:hidden; }
+        .fallback-lens::after { content:''; position:absolute; width:70%; height:150%; top:-25%; left:var(--lens-reflect,-90%); transform:rotate(28deg); background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent); filter:blur(2px); }
+        .fallback-flash { width:16px; height:16px; margin:auto; border-radius:50%; background:#fff7d6; }
+        .fallback-shadow { position:absolute; left:50%; top:74%; width:260px; height:58px; transform:translateX(-50%); border-radius:50%; background:radial-gradient(ellipse,rgba(0,0,0,.4),transparent 68%); filter:blur(15px); opacity:.55; pointer-events:none; }
+        @media(max-width:768px){ .fallback-trifold{transform:scale(.48)} }
+
     </style>
 </head>
 <body>
@@ -889,106 +995,29 @@
     <section class="scroll-sticky-container">
         <div class="sticky-viewport">
             <h2 class="animation-title">더 넓게, 단숨에 펼쳐지는 감동</h2>
-            <div class="device-3d-scene">
-                <div class="trifold-container">
-                    
-                    <!-- 1) 좌측 정렬 대칭 패널 (센터 왼쪽에 결합, 전후면 preserve-3d) -->
-                    <div class="trifold-body panel-left">
-                        <div class="panel-edge edge-top" aria-hidden="true"></div>
-                        <div class="panel-edge edge-bottom" aria-hidden="true"></div>
-                        
-                        <!-- 전면 전용 뷰 -->
-                        <div class="panel-face face-front">
-                            <div class="screen-wallpaper left-wall"></div>
-                            <div class="screen-content">
-                                <div class="app-header">
-                                    <span>Workspace</span>
-                                    <div class="app-status-dot"></div>
-                                </div>
-                                <div class="app-body">
-                                    <div class="app-line"></div>
-                                    <div class="app-line medium"></div>
-                                    <div class="app-line short"></div>
-                                </div>
-                                <span style="font-size: 11px; color: var(--text-light-gray);">Left Panel 01</span>
-                            </div>
+            <div class="device-3d-scene" id="deviceScene">
+                <canvas id="trifoldCanvas" aria-label="스크롤로 펼쳐지는 트라이폴드 3D 제품 렌더링"></canvas>
+                <div id="cssFallback" aria-label="CSS 3D 폴백 렌더링">
+                    <div class="fallback-shadow"></div>
+                    <div class="fallback-trifold" id="fallbackTrifold">
+                        <div class="fallback-panel fallback-panel-left" id="fallbackLeft">
+                            <div class="fallback-edge fallback-edge-top"></div><div class="fallback-edge fallback-edge-bottom"></div>
+                            <div class="fallback-face"><div class="fallback-screen" id="fallbackScreenLeft"></div></div>
+                            <div class="fallback-face fallback-back"><div class="fallback-camera"><div class="fallback-lens"></div><div class="fallback-lens"></div><div class="fallback-lens"></div><div class="fallback-flash"></div></div></div>
                         </div>
-
-                        <!-- 후면 하드웨어 전용 뷰 (접혀있을 때 전면 노출) -->
-                        <div class="panel-face face-back">
-                            <!-- 하드웨어 카메라 범프 -->
-                            <div class="camera-bump">
-                                <div class="camera-lens">
-                                    <div class="lens-flare"></div>
-                                </div>
-                                <div class="camera-lens">
-                                    <div class="lens-flare"></div>
-                                </div>
-                                <div class="camera-lens">
-                                    <div class="lens-flare"></div>
-                                </div>
-                                <div class="sensor-flash"></div>
-                            </div>
-                            <div class="antenna-line"></div>
-                            <div></div> <!-- 여백용 dummy -->
-                            <div class="rear-brand-logo">TRIFOLD</div>
+                        <div class="fallback-panel fallback-panel-center" id="fallbackCenter">
+                            <div class="fallback-edge fallback-edge-top"></div><div class="fallback-edge fallback-edge-bottom"></div>
+                            <div class="fallback-face"><div class="fallback-screen" id="fallbackScreenCenter"></div></div>
+                            <div class="fallback-face fallback-back"></div>
                         </div>
-
-                    </div>
-
-                    <!-- 2) 중앙 고정 패널 (모든 회전의 메인 고정 축) -->
-                    <div class="trifold-body panel-center">
-                        <div class="panel-edge edge-top" aria-hidden="true"></div>
-                        <div class="panel-edge edge-bottom" aria-hidden="true"></div>
-                        <div class="panel-face face-front">
-                            <div class="screen-wallpaper center-wall"></div>
-                            <div class="screen-content" style="opacity: 1;">
-                                <div class="app-header">
-                                    <span>Trifold Center</span>
-                                </div>
-                                <div class="app-body">
-                                    <div class="app-line medium"></div>
-                                    <div class="app-line"></div>
-                                    <div class="app-line short"></div>
-                                </div>
-                                <span style="font-size: 11px; color: var(--text-light-gray);">Center Anchor</span>
-                            </div>
+                        <div class="fallback-panel fallback-panel-right" id="fallbackRight">
+                            <div class="fallback-edge fallback-edge-top"></div><div class="fallback-edge fallback-edge-bottom"></div>
+                            <div class="fallback-face"><div class="fallback-screen" id="fallbackScreenRight"></div></div>
+                            <div class="fallback-face fallback-back"></div>
                         </div>
                     </div>
-
-                    <!-- 3) 우측 정렬 대칭 패널 (센터 오른쪽에 결합, 전후면 preserve-3d) -->
-                    <div class="trifold-body panel-right">
-                        <div class="panel-edge edge-top" aria-hidden="true"></div>
-                        <div class="panel-edge edge-bottom" aria-hidden="true"></div>
-                        
-                        <!-- 전면 전용 뷰 -->
-                        <div class="panel-face face-front">
-                            <div class="screen-wallpaper right-wall"></div>
-                            <div class="screen-content">
-                                <div class="app-header">
-                                    <span>Entertainment</span>
-                                    <div class="app-status-dot" style="background-color: #f59e0b;"></div>
-                                </div>
-                                <div class="app-body">
-                                    <div class="app-line short"></div>
-                                    <div class="app-line medium"></div>
-                                    <div class="app-line"></div>
-                                </div>
-                                <span style="font-size: 11px; color: var(--text-light-gray);">Right Panel 03</span>
-                            </div>
-                        </div>
-
-                        <!-- 후면 하드웨어 전용 뷰 -->
-                        <div class="panel-face face-back">
-                            <div class="antenna-line"></div>
-                            <div></div> <!-- 여백용 dummy -->
-                            <div class="rear-brand-logo">TRIFOLD</div>
-                        </div>
-
-                        <div class="hinge-right"></div>
-                    </div>
-
                 </div>
+                <div class="device-stage-caption" id="deviceCaption">접힌 상태 · 카메라 패널부터 펼쳐집니다</div>
             </div>
         </div>
     </section>
@@ -1030,13 +1059,13 @@
                 </div>
                 <!-- 앱 2 -->
                 <div class="mock-app">
-                    <div class="app-icon notes">N</div>
+                    <div class="app-icon notes">M</div>
                     <h3 class="app-name">Memo & Idea</h3>
                     <p class="app-desc">스쳐 지나가는 영감을 기록하기에 이상적인 공간. 단어의 호흡을 가장 편안하게 구성합니다.</p>
                 </div>
                 <!-- 앱 3 -->
                 <div class="mock-app">
-                    <div class="app-icon safari">S</div>
+                    <div class="app-icon safari">B</div>
                     <h3 class="app-name">Browser</h3>
                     <p class="app-desc">끊김 없이 정보의 바다를 서핑하는 탐색 영역. 대화면과 어우러져 완벽한 데스크톱 뷰를 제시합니다.</p>
                 </div>
@@ -1076,148 +1105,526 @@
         </div>
     </footer>
 
-    <!-- 스크롤 3D 모션 제어 스크립트 -->
+
     <script>
-        // 1. 공통 스크롤 페이드인 인터랙션 제어
-        const fadeElements = document.querySelectorAll('.fade-in-element');
-        const observerOptions = {
-            root: null,
-            threshold: 0.1,
-            rootMargin: "0px 0px -60px 0px"
-        };
+        // 공통 UI와 CSS 3D 폴백. Three.js CDN과 로컬 모듈이 모두 실패할 때 실행된다.
+        (() => {
+            const clamp01 = v => Math.max(0, Math.min(1, v));
+            const remap = (v, a, b) => clamp01((v-a)/(b-a));
+            const ease = v => v < .5 ? 4*v*v*v : 1-Math.pow(-2*v+2,3)/2;
 
-        const scrollObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
+            window.activateCSSFallback = () => {
+                const host = document.getElementById('deviceScene');
+                host.classList.add('fallback-active');
+                document.getElementById('deviceCaption').textContent = '오프라인 CSS 렌더링 · 카메라 패널부터 펼쳐집니다';
+                const left = document.getElementById('fallbackLeft');
+                const right = document.getElementById('fallbackRight');
+                const body = document.getElementById('fallbackTrifold');
+                const screens = [document.getElementById('fallbackScreenLeft'),document.getElementById('fallbackScreenCenter'),document.getElementById('fallbackScreenRight')];
+                const lenses = document.querySelectorAll('.fallback-lens');
+                const shadow = document.querySelector('.fallback-shadow');
+                const sticky = document.querySelector('.scroll-sticky-container');
+                let raf = 0;
+                const render = () => {
+                    raf = 0;
+                    const rect = sticky.getBoundingClientRect();
+                    const progress = clamp01(-rect.top / Math.max(1, rect.height-innerHeight));
+                    const lp = ease(remap(progress,0,.52));
+                    const rp = ease(remap(progress,.48,.92));
+                    left.style.transform = `translateZ(${29*(1-lp)+2}px) rotateY(${180*(1-lp)}deg)`;
+                    right.style.transform = `translateZ(${15*(1-rp)+1}px) rotateY(${-180*(1-rp)}deg)`;
+                    body.style.transform = `rotateX(${3.2-3.8*progress}deg) rotateY(${-7.5+12*progress}deg) rotateZ(${-Math.sin(progress*Math.PI)*.7}deg)`;
+                    const on = ease(remap(progress,.91,1));
+                    screens.forEach(el => el.style.opacity = on);
+                    lenses.forEach((el,i)=>el.style.setProperty('--lens-reflect', `${-100 + ((progress*230+i*22)%230)}%`));
+                    shadow.style.width = `${150+210*((lp+rp)/2)}px`;
+                    shadow.style.opacity = `${.62-.3*((lp+rp)/2)}`;
+                    host.style.setProperty('--light-x', `${12+76*progress}%`);
+                };
+                const request = () => { if(!raf) raf=requestAnimationFrame(render); };
+                addEventListener('scroll',request,{passive:true}); addEventListener('resize',request); render();
+            };
 
-        fadeElements.forEach(el => scrollObserver.observe(el));
+            const fadeElements = document.querySelectorAll('.fade-in-element');
+            const observer = new IntersectionObserver((entries,o)=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target);}}),{threshold:.1,rootMargin:'0px 0px -60px 0px'});
+            fadeElements.forEach(el=>observer.observe(el));
 
+            const overlay=document.getElementById('modalOverlay'), input=document.getElementById('subscriberEmail'), submit=document.getElementById('submitBtn');
+            document.getElementById('openModal').addEventListener('click',()=>overlay.classList.add('active'));
+            const close=()=>{overlay.classList.remove('active');input.value='';};
+            document.getElementById('closeModal').addEventListener('click',close);
+            overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+            submit.addEventListener('click',()=>{if(!input.value.trim()){input.style.borderColor='red';setTimeout(()=>input.style.borderColor='rgba(0,0,0,.15)',1000);return;}submit.textContent='완료되었습니다';submit.style.backgroundColor='#10b981';setTimeout(()=>{close();submit.textContent='구독 신청';submit.style.backgroundColor='var(--point-blue)';},1200);});
+        })();
+    </script>
 
-        // 2. 정밀 3D 스크롤 동기화 수식 및 트랜지션 로직
-        const stickyContainer = document.querySelector('.scroll-sticky-container');
-        const panelLeft = document.querySelector('.panel-left');
-        const panelRight = document.querySelector('.panel-right');
-        const panelCenter = document.querySelector('.panel-center');
-        const wallpapers = document.querySelectorAll('.screen-wallpaper');
-        const contents = document.querySelectorAll('.screen-content');
+    <!-- Three.js 기반 트라이폴드 제품 렌더링 -->
+    <script type="module">
+        let THREE;
+        try {
+            THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+        } catch (cdnError) {
+            try {
+                THREE = await import('./libs/three.module.js');
+            } catch (localError) {
+                console.warn('Three.js를 불러오지 못해 CSS 3D 폴백을 사용합니다.', { cdnError, localError });
+                window.activateCSSFallback();
+            }
+        }
 
-        // 패널별 진행률을 분리해 실제 트라이폴드처럼 순차적으로 전개한다.
-        // 0.00 ~ 0.52: 카메라가 있는 왼쪽 패널
-        // 0.48 ~ 1.00: 오른쪽 패널 (약간의 오버랩으로 동작이 끊겨 보이지 않게 처리)
+        if (THREE) {
+
         const clamp01 = value => Math.max(0, Math.min(1, value));
         const remap = (value, start, end) => clamp01((value - start) / (end - start));
-        const easeInOutCubic = value =>
-            value < 0.5
-                ? 4 * value * value * value
-                : 1 - Math.pow(-2 * value + 2, 3) / 2;
+        const smoothstep = value => value * value * (3 - 2 * value);
+        const smootherstep = value => value * value * value * (value * (value * 6 - 15) + 10);
 
-        let ticking = false;
+        const canvas = document.getElementById('trifoldCanvas');
+        const sceneHost = document.getElementById('deviceScene');
+        const stickyContainer = document.querySelector('.scroll-sticky-container');
+        const caption = document.getElementById('deviceCaption');
 
-        const renderTrifold = () => {
-            const containerRect = stickyContainer.getBoundingClientRect();
-            const totalScrollHeight = containerRect.height - window.innerHeight;
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance'
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.05;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-            const progress = clamp01(-containerRect.top / totalScrollHeight);
-            const leftProgress = easeInOutCubic(remap(progress, 0.00, 0.52));
-            const rightProgress = easeInOutCubic(remap(progress, 0.48, 1.00));
+        const scene = new THREE.Scene();
 
-            // 완전히 접힌 상태는 ±180도다. 세 패널이 정확히 같은 면적에 포개진다.
-            const angleLeft = 180 * (1 - leftProgress);
-            const angleRight = -180 * (1 - rightProgress);
+        const camera = new THREE.PerspectiveCamera(25, 1, 0.1, 2000);
+        camera.position.set(0, 8, 510);
+        camera.lookAt(0, 0, 0);
 
-            // 레이어 순서를 전체 스크롤 구간에서 고정한다.
-            // preserve-3d에서는 z-index만으로 순서가 뒤집힐 수 있으므로 월드 Z 깊이도 같은 순서로 유지한다.
-            const leftDepth = 16;
-            const rightDepth = 8;
+        // 실제 폼팩터(mm)를 그대로 Three.js 단위로 사용한다.
+        const DEVICE_H = 159.2;
+        const PANEL_W = 75.0;
+        const UNFOLDED_W = 214.1;
+        const PANEL_STEP = (UNFOLDED_W - PANEL_W) / 2; // 69.55mm
+        const HINGE_X = PANEL_STEP / 2; // 두 패널이 겹치는 힌지 영역의 중앙축
+        const CORNER = 4.5;
 
-            panelLeft.style.zIndex = "30";
-            panelRight.style.zIndex = "20";
-            panelCenter.style.zIndex = "10";
+        const panelSpecs = {
+            left:   { thickness: 3.9, depth: 9.0 },
+            center: { thickness: 4.2, depth: 0.0 },
+            right:  { thickness: 4.0, depth: 4.6 }
+        };
 
-            panelLeft.style.transform =
-                `translateZ(${leftDepth}px) rotateY(${angleLeft}deg)`;
-            panelRight.style.transform =
-                `translateZ(${rightDepth}px) rotateY(${angleRight}deg)`;
+        const product = new THREE.Group();
+        product.position.y = 2;
+        scene.add(product);
 
-            // 각 화면은 해당 패널이 실제로 열린 정도에 맞춰 별도로 밝아진다.
-            const panelOpacities = [
-                0.15 + leftProgress * 0.85,
-                0.15 + progress * 0.85,
-                0.15 + rightProgress * 0.85
-            ];
+        function roundedRectShape(width, height, radius) {
+            const x = -width / 2;
+            const y = -height / 2;
+            const shape = new THREE.Shape();
+            shape.moveTo(x + radius, y);
+            shape.lineTo(x + width - radius, y);
+            shape.quadraticCurveTo(x + width, y, x + width, y + radius);
+            shape.lineTo(x + width, y + height - radius);
+            shape.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            shape.lineTo(x + radius, y + height);
+            shape.quadraticCurveTo(x, y + height, x, y + height - radius);
+            shape.lineTo(x, y + radius);
+            shape.quadraticCurveTo(x, y, x + radius, y);
+            return shape;
+        }
 
-            wallpapers.forEach((wallpaper, index) => {
-                wallpaper.style.opacity = panelOpacities[index];
+        function makeScreenTexture(label, accent) {
+            const c = document.createElement('canvas');
+            c.width = 768;
+            c.height = 1536;
+            const ctx = c.getContext('2d');
+            const g = ctx.createLinearGradient(0, 0, c.width, c.height);
+            g.addColorStop(0, '#d8c4ff');
+            g.addColorStop(.45, '#a8d5ff');
+            g.addColorStop(1, '#f1f4ff');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, c.width, c.height);
+
+            const glow = ctx.createRadialGradient(550, 360, 30, 550, 360, 540);
+            glow.addColorStop(0, 'rgba(255,255,255,.92)');
+            glow.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = glow;
+            ctx.fillRect(0, 0, c.width, c.height);
+
+            ctx.fillStyle = 'rgba(255,255,255,.54)';
+            ctx.beginPath();
+            ctx.roundRect(70, 210, 628, 740, 40);
+            ctx.fill();
+            ctx.fillStyle = '#1d1d1f';
+            ctx.font = '600 42px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillText(label, 70, 112);
+            ctx.fillStyle = accent;
+            ctx.beginPath();
+            ctx.arc(652, 98, 13, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(29,29,31,.10)';
+            [0,1,2,3,4].forEach((_, i) => {
+                ctx.beginPath();
+                ctx.roundRect(112, 286 + i * 92, i === 2 ? 350 : 500, 18, 9);
+                ctx.fill();
             });
 
-            // 중앙 화면은 먼저 유지하고, 좌/우 콘텐츠는 각 패널이 절반 이상 열린 뒤 등장한다.
-            contents.forEach((content, index) => {
-                if (index === 0) {
-                    content.style.opacity = clamp01((leftProgress - 0.5) * 2);
-                } else if (index === 1) {
-                    content.style.opacity = 1;
-                } else {
-                    content.style.opacity = clamp01((rightProgress - 0.5) * 2);
-                }
+            const texture = new THREE.CanvasTexture(c);
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            return texture;
+        }
+
+        function makeReflectionTexture() {
+            const c = document.createElement('canvas');
+            c.width = 256;
+            c.height = 256;
+            const ctx = c.getContext('2d');
+            const g = ctx.createLinearGradient(0, 0, 256, 256);
+            g.addColorStop(0, 'rgba(255,255,255,0)');
+            g.addColorStop(.38, 'rgba(255,255,255,0)');
+            g.addColorStop(.50, 'rgba(255,255,255,.88)');
+            g.addColorStop(.62, 'rgba(255,255,255,0)');
+            g.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, 256, 256);
+            const texture = new THREE.CanvasTexture(c);
+            texture.colorSpace = THREE.SRGBColorSpace;
+            return texture;
+        }
+
+        const screenTextures = [
+            makeScreenTexture('Workspace', '#0071e3'),
+            makeScreenTexture('Trifold', '#1d1d1f'),
+            makeScreenTexture('Entertainment', '#f59e0b')
+        ];
+
+        const frameMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x09090a,
+            roughness: .34,
+            metalness: .88,
+            clearcoat: .38,
+            clearcoatRoughness: .28
+        });
+        const backMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x111113,
+            roughness: .52,
+            metalness: .68,
+            clearcoat: .18,
+            clearcoatRoughness: .42
+        });
+
+        const screens = [];
+        const screenGlows = [];
+        const cameraReflections = [];
+
+        function createPanel(name, thickness, texture, withCamera = false) {
+            const group = new THREE.Group();
+            group.name = name;
+
+            const shape = roundedRectShape(PANEL_W, DEVICE_H, CORNER);
+            const geometry = new THREE.ExtrudeGeometry(shape, {
+                depth: thickness,
+                bevelEnabled: true,
+                bevelSegments: 5,
+                steps: 1,
+                bevelSize: .75,
+                bevelThickness: .55,
+                curveSegments: 18
+            });
+            geometry.center();
+            const body = new THREE.Mesh(geometry, [frameMaterial, backMaterial]);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            group.add(body);
+
+            const screenShape = roundedRectShape(PANEL_W - 4.2, DEVICE_H - 4.2, 3.2);
+            const screenGeo = new THREE.ShapeGeometry(screenShape, 28);
+            const screenMat = new THREE.MeshPhysicalMaterial({
+                color: 0x000000,
+                map: texture,
+                emissive: 0xffffff,
+                emissiveMap: texture,
+                emissiveIntensity: 0,
+                roughness: .18,
+                metalness: 0,
+                clearcoat: 1,
+                clearcoatRoughness: .08,
+                transparent: true
+            });
+            const screen = new THREE.Mesh(screenGeo, screenMat);
+            screen.position.z = thickness / 2 + .64;
+            group.add(screen);
+            screens.push(screen);
+
+            // 점등 직전 가장자리에서만 보이는 OLED bloom 유사 레이어
+            const glowMat = new THREE.MeshBasicMaterial({
+                color: 0xbddcff,
+                transparent: true,
+                opacity: 0,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            const glow = new THREE.Mesh(screenGeo.clone(), glowMat);
+            glow.scale.set(1.012, 1.006, 1);
+            glow.position.z = thickness / 2 + .59;
+            group.add(glow);
+            screenGlows.push(glow);
+
+            if (withCamera) {
+                const bumpShape = roundedRectShape(30, 30, 5.5);
+                const bumpGeo = new THREE.ExtrudeGeometry(bumpShape, {
+                    depth: 2.0,
+                    bevelEnabled: true,
+                    bevelSegments: 4,
+                    bevelSize: .7,
+                    bevelThickness: .5
+                });
+                bumpGeo.center();
+                const bump = new THREE.Mesh(bumpGeo, backMaterial);
+                bump.position.set(-18, 48, -thickness / 2 - 1.15);
+                bump.rotation.y = Math.PI;
+                bump.castShadow = true;
+                group.add(bump);
+
+                const lensMat = new THREE.MeshPhysicalMaterial({
+                    color: 0x020207,
+                    roughness: .05,
+                    metalness: .15,
+                    clearcoat: 1,
+                    clearcoatRoughness: .02,
+                    transmission: .12,
+                    thickness: 1.5
+                });
+                const ringMat = new THREE.MeshStandardMaterial({ color: 0x2d2d31, metalness: .95, roughness: .2 });
+                const reflTex = makeReflectionTexture();
+                [[-7,7],[7,7],[-7,-7]].forEach(([x,y], index) => {
+                    const ring = new THREE.Mesh(new THREE.CylinderGeometry(5.0, 5.0, 1.25, 48), ringMat);
+                    ring.rotation.x = Math.PI / 2;
+                    ring.position.set(-18 + x, 48 + y, -thickness / 2 - 2.25);
+                    group.add(ring);
+
+                    const lens = new THREE.Mesh(new THREE.CylinderGeometry(4.05, 4.05, .9, 48), lensMat);
+                    lens.rotation.x = Math.PI / 2;
+                    lens.position.set(-18 + x, 48 + y, -thickness / 2 - 3.0);
+                    group.add(lens);
+
+                    const reflMat = new THREE.MeshBasicMaterial({
+                        map: reflTex,
+                        transparent: true,
+                        opacity: .38,
+                        blending: THREE.AdditiveBlending,
+                        depthWrite: false,
+                        side: THREE.DoubleSide
+                    });
+                    const refl = new THREE.Mesh(new THREE.CircleGeometry(3.65, 48), reflMat);
+                    refl.position.set(-18 + x, 48 + y, -thickness / 2 - 3.5);
+                    refl.rotation.y = Math.PI;
+                    refl.userData.phase = index * .18;
+                    group.add(refl);
+                    cameraReflections.push(refl);
+                });
+
+                const flash = new THREE.Mesh(
+                    new THREE.CircleGeometry(2.3, 32),
+                    new THREE.MeshBasicMaterial({ color: 0xfff7d6 })
+                );
+                flash.position.set(-11, 41, -thickness / 2 - 3.48);
+                flash.rotation.y = Math.PI;
+                group.add(flash);
+            }
+
+            return group;
+        }
+
+        const centerPanel = createPanel('center', panelSpecs.center.thickness, screenTextures[1]);
+        centerPanel.position.z = panelSpecs.center.depth;
+        product.add(centerPanel);
+
+        // 힌지 피벗과 패널을 부모-자식으로 연결해 각 면이 실제로 맞물린 상태에서 회전한다.
+        const leftPivot = new THREE.Group();
+        leftPivot.position.set(-HINGE_X, 0, panelSpecs.left.depth);
+        const leftPanel = createPanel('left-camera', panelSpecs.left.thickness, screenTextures[0], true);
+        leftPanel.position.x = -(PANEL_STEP - HINGE_X);
+        leftPivot.add(leftPanel);
+        product.add(leftPivot);
+
+        const rightPivot = new THREE.Group();
+        rightPivot.position.set(HINGE_X, 0, panelSpecs.right.depth);
+        const rightPanel = createPanel('right', panelSpecs.right.thickness, screenTextures[2]);
+        rightPanel.position.x = PANEL_STEP - HINGE_X;
+        rightPivot.add(rightPanel);
+        product.add(rightPivot);
+
+        // 힌지 실린더는 기존 금속 느낌을 유지한다.
+        const hingeMaterial = new THREE.MeshStandardMaterial({ color: 0x222226, metalness: .92, roughness: .28 });
+        [-HINGE_X, HINGE_X].forEach(x => {
+            const hinge = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.25, DEVICE_H - 8, 28), hingeMaterial);
+            hinge.position.set(x, 0, -.1);
+            hinge.castShadow = true;
+            product.add(hinge);
+        });
+
+        // 스튜디오 조명
+        scene.add(new THREE.HemisphereLight(0xffffff, 0x92929a, 1.35));
+        const keyLight = new THREE.DirectionalLight(0xffffff, 4.2);
+        keyLight.position.set(-170, 140, 260);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.set(2048, 2048);
+        keyLight.shadow.camera.left = -260;
+        keyLight.shadow.camera.right = 260;
+        keyLight.shadow.camera.top = 220;
+        keyLight.shadow.camera.bottom = -220;
+        scene.add(keyLight);
+
+        const rimLight = new THREE.PointLight(0xbfd8ff, 95, 550, 2);
+        rimLight.position.set(180, 20, 190);
+        scene.add(rimLight);
+
+        const fillLight = new THREE.PointLight(0xffffff, 50, 500, 2);
+        fillLight.position.set(-150, -80, 120);
+        scene.add(fillLight);
+
+        // 카메라 정면에 보이는 부드러운 타원형 바닥 그림자
+        const shadowCanvas = document.createElement('canvas');
+        shadowCanvas.width = 512;
+        shadowCanvas.height = 160;
+        const shadowCtx = shadowCanvas.getContext('2d');
+        const shadowGradient = shadowCtx.createRadialGradient(256, 80, 8, 256, 80, 230);
+        shadowGradient.addColorStop(0, 'rgba(0,0,0,.42)');
+        shadowGradient.addColorStop(.42, 'rgba(0,0,0,.18)');
+        shadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
+        shadowCtx.fillStyle = shadowGradient;
+        shadowCtx.fillRect(0, 0, 512, 160);
+        const shadowTexture = new THREE.CanvasTexture(shadowCanvas);
+        const shadowSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: shadowTexture,
+            transparent: true,
+            depthWrite: false,
+            opacity: .56
+        }));
+        shadowSprite.position.set(0, -91, -20);
+        shadowSprite.scale.set(120, 34, 1);
+        scene.add(shadowSprite);
+
+        let targetProgress = 0;
+        let currentLeftAngle = Math.PI;
+        let currentRightAngle = -Math.PI;
+        let leftVelocity = 0;
+        let rightVelocity = 0;
+        let lastTime = performance.now();
+
+        function updateProgress() {
+            const rect = stickyContainer.getBoundingClientRect();
+            const total = Math.max(1, rect.height - window.innerHeight);
+            targetProgress = clamp01(-rect.top / total);
+        }
+
+        function resizeRenderer() {
+            const width = sceneHost.clientWidth;
+            const height = sceneHost.clientHeight;
+            renderer.setSize(width, height, false);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            const mobile = width < 760;
+            camera.position.z = mobile ? 610 : 510;
+        }
+
+        function spring(current, velocity, target, dt, stiffness = 108, damping = 19) {
+            const force = (target - current) * stiffness;
+            velocity += force * dt;
+            velocity *= Math.exp(-damping * dt);
+            current += velocity * dt;
+            return [current, velocity];
+        }
+
+        function animate(now) {
+            const dt = Math.min((now - lastTime) / 1000, .033);
+            lastTime = now;
+
+            const leftProgress = smootherstep(remap(targetProgress, 0.02, 0.53));
+            const rightProgress = smootherstep(remap(targetProgress, 0.47, 0.88));
+            const screenProgress = smoothstep(remap(targetProgress, 0.88, 1.0));
+
+            const targetLeft = Math.PI * (1 - leftProgress);
+            const targetRight = -Math.PI * (1 - rightProgress);
+            [currentLeftAngle, leftVelocity] = spring(currentLeftAngle, leftVelocity, targetLeft, dt);
+            [currentRightAngle, rightVelocity] = spring(currentRightAngle, rightVelocity, targetRight, dt);
+
+            leftPivot.rotation.y = currentLeftAngle;
+            rightPivot.rotation.y = currentRightAngle;
+
+            // 접힌 상태에서 왼쪽(카메라) > 오른쪽 > 중앙 순으로 쌓이고, 펼쳐지며 같은 평면으로 수렴한다.
+            leftPivot.position.z = THREE.MathUtils.lerp(panelSpecs.left.depth, .35, leftProgress);
+            rightPivot.position.z = THREE.MathUtils.lerp(panelSpecs.right.depth, .18, rightProgress);
+
+            // 제품 전체 회전: 카메라가 제품 주변을 도는 듯한 미세한 광고 연출
+            product.rotation.y = THREE.MathUtils.degToRad(THREE.MathUtils.lerp(-7.5, 4.5, smoothstep(targetProgress)));
+            product.rotation.x = THREE.MathUtils.degToRad(THREE.MathUtils.lerp(3.2, -.6, smoothstep(targetProgress)));
+            product.rotation.z = THREE.MathUtils.degToRad(Math.sin(targetProgress * Math.PI) * -.7);
+            product.position.y = 2 + Math.sin(targetProgress * Math.PI) * 2.5;
+
+            // 완전히 펼친 후 검은 OLED가 켜지고, 가장자리 glow가 먼저 반짝인다.
+            screens.forEach((screen, index) => {
+                const delayed = smoothstep(clamp01(screenProgress * 1.14 - index * .07));
+                screen.material.emissiveIntensity = delayed * 1.08;
+                screen.material.color.setScalar(THREE.MathUtils.lerp(0.0, 1.0, delayed));
+                screen.material.opacity = THREE.MathUtils.lerp(.96, 1, delayed);
+                screenGlows[index].material.opacity = Math.sin(delayed * Math.PI) * .22;
             });
 
-            ticking = false;
-        };
+            // 렌즈별 시간차가 있는 대각선 reflection
+            cameraReflections.forEach(refl => {
+                const phase = (targetProgress * 1.7 + refl.userData.phase) % 1;
+                refl.material.map.offset.x = phase * 1.8 - .9;
+                refl.material.map.offset.y = phase * -.7 + .35;
+                refl.rotation.z = -.45 + phase * .12;
+                refl.material.opacity = .18 + Math.sin(phase * Math.PI) * .56;
+            });
 
-        const requestTrifoldRender = () => {
-            if (!ticking) {
-                window.requestAnimationFrame(renderTrifold);
-                ticking = true;
+            // 이동하는 환경광과 배경 하이라이트
+            const lightX = THREE.MathUtils.lerp(-190, 210, smoothstep(targetProgress));
+            keyLight.position.x = lightX;
+            keyLight.position.z = 220 + Math.sin(targetProgress * Math.PI) * 65;
+            rimLight.position.x = -lightX * .72;
+            sceneHost.style.setProperty('--light-x', `${18 + targetProgress * 66}%`);
+
+            // 펼쳐질수록 그림자는 넓어지고 옅어진다.
+            const openAmount = (leftProgress + rightProgress) / 2;
+            shadowSprite.scale.x = THREE.MathUtils.lerp(92, 244, openAmount);
+            shadowSprite.scale.y = THREE.MathUtils.lerp(31, 45, openAmount);
+            shadowSprite.material.opacity = THREE.MathUtils.lerp(.64, .28, openAmount);
+            shadowSprite.position.y = THREE.MathUtils.lerp(-88, -94, openAmount);
+
+            if (targetProgress < .44) {
+                caption.textContent = '카메라 패널을 펼치는 중';
+            } else if (targetProgress < .86) {
+                caption.textContent = '오른쪽 패널을 펼치는 중';
+            } else if (targetProgress < .94) {
+                caption.textContent = '완전히 펼쳐졌습니다';
+            } else {
+                caption.textContent = '10인치급 대화면 · 디스플레이 ON';
             }
-        };
 
-        window.addEventListener('scroll', requestTrifoldRender, { passive: true });
-        window.addEventListener('resize', requestTrifoldRender);
-        requestTrifoldRender();
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
 
-
-        // 3. CTA 마이크로 인터랙션 - 팝업 모달 제어
-        const openModalBtn = document.getElementById('openModal');
-        const closeModalBtn = document.getElementById('closeModal');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const submitBtn = document.getElementById('submitBtn');
-        const emailInput = document.getElementById('subscriberEmail');
-
-        openModalBtn.addEventListener('click', () => {
-            modalOverlay.classList.add('active');
+        window.addEventListener('scroll', updateProgress, { passive: true });
+        window.addEventListener('resize', () => {
+            resizeRenderer();
+            updateProgress();
         });
+        resizeRenderer();
+        updateProgress();
+        requestAnimationFrame(animate);
 
-        const closeModal = () => {
-            modalOverlay.classList.remove('active');
-            emailInput.value = '';
-        };
-
-        closeModalBtn.addEventListener('click', closeModal);
-        
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) closeModal();
-        });
-
-        submitBtn.addEventListener('click', () => {
-            const emailValue = emailInput.value.trim();
-            if (emailValue === "") {
-                emailInput.style.borderColor = "red";
-                setTimeout(() => emailInput.style.borderColor = "rgba(0,0,0,0.15)", 1000);
-                return;
-            }
-            submitBtn.textContent = "완료되었습니다";
-            submitBtn.style.backgroundColor = "#10b981";
-            setTimeout(() => {
-                closeModal();
-                submitBtn.textContent = "구독 신청";
-                submitBtn.style.backgroundColor = "var(--point-blue)";
-            }, 1200);
-        });
+        }
     </script>
 </body>
 </html>
