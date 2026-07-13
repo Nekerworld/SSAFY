@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trifold — 초월적 크기. 압도적 몰입.</title>
+    <style>
+        /* 1. 디자인 토큰 및 기본 설정 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-white: #ffffff;
+            --bg-apple-grey: #f5f5f7;
+            --text-dark: #1d1d1f;
+            --text-gray: #86868b;
+            --text-light-gray: #a1a1a6;
+            --point-blue: #0071e3;
+            --metallic-border: rgba(0, 0, 0, 0.1);
+            --font-apple: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-white);
+            color: var(--text-dark);
+            font-family: var(--font-apple);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 부드러운 스크롤 이동 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* 2. 스크롤 페이드인 공통 클래스 */
+        .fade-in-element {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .fade-in-element.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 3. 내비게이션 바 */
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .nav-container {
+            width: 100%;
+            max-width: 1024px;
+            padding: 0 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: -0.5px;
+            color: var(--text-dark);
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-dark);
+        }
+
+        /* 4. 히어로 섹션 */
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            background-color: var(--bg-white);
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-tag {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-gray);
+            margin-bottom: 12px;
+        }
+
+        .hero-title {
+            font-size: 64px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+            line-height: 1.15;
+            color: var(--text-dark);
+        }
+
+        .hero-subtitle {
+            font-size: 24px;
+            color: var(--text-gray);
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            font-size: 12px;
+            color: var(--text-light-gray);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+            60% { transform: translateY(-4px); }
+        }
+
+        /* 5. 3D 인터랙티브 스크롤 펼침 애니메이션 섹션 (버그 수정 영역) */
+        .scroll-sticky-container {
+            position: relative;
+            height: 250vh;
+            background-color: var(--bg-apple-grey);
+        }
+
+        .sticky-viewport {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .animation-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 50px;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        /* [개선] 3D 뷰포트 배치 고정화 */
+        .device-3d-scene {
+            perspective: 2000px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            height: 440px;
+        }
+
+        /* [개선] 밀착 배치용 중앙 제어 바디 앵커 */
+        .trifold-container {
+            position: relative;
+            width: 200px;
+            height: 400px;
+            transform-style: preserve-3d;
+        }
+
+        /* [개선] 개별 바디 상호 조화 명세 */
+        .trifold-body {
+            position: absolute;
+            width: 200px;
+            height: 100%;
+            top: 0;
+            background: #ffffff;
+            border: 4px solid #d1d1d6;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* 메인 센터 패널 */
+        .panel-center {
+            left: 0;
+            z-index: 3;
+            border-radius: 4px; /* 결합되는 곳은 플랫하게 연출 */
+        }
+
+        /* [개선] 좌측 대칭 날개 - 센터 기준 왼쪽(-200px)에 완벽 정렬 및 힌지축 우측 고정 */
+        .panel-left {
+            left: -196px; /* 이음새 오차 보정밀착 */
+            transform-origin: right center;
+            z-index: 2;
+            border-radius: 18px 4px 4px 18px;
+        }
+
+        /* [개선] 우측 대칭 날개 - 센터 기준 오른쪽(200px)에 완벽 정렬 및 힌지축 좌측 고정 */
+        .panel-right {
+            left: 196px; /* 이음새 오차 보정밀착 */
+            transform-origin: left center;
+            z-index: 2;
+            border-radius: 4px 18px 18px 4px;
+        }
+
+        /* [개선] 스크린 월페이퍼 - 완전히 펼쳤을 때 가로 600px의 하나의 자연스러운 그림으로 이어지도록 슬라이싱 */
+        .screen-wallpaper {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            background-size: 588px 392px; /* 3개 패널 크기(200px * 3)의 해상도 고정 */
+            opacity: 0.15;
+            transition: opacity 0.5s ease;
+        }
+
+        .left-wall {
+            background-position: 0px 0px;
+            border-radius: 12px 0 0 12px;
+        }
+
+        .center-wall {
+            background-position: -196px 0px;
+        }
+
+        .right-wall {
+            background-position: -392px 0px;
+            border-radius: 0 12px 12px 0;
+        }
+
+        /* 화면 텍스트 요소 */
+        .screen-content {
+            position: absolute;
+            top: 24px; left: 16px; right: 16px; bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: var(--text-dark);
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            backface-visibility: hidden;
+            z-index: 5;
+        }
+
+        .app-header {
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--point-blue);
+            border-radius: 50%;
+        }
+
+        .app-body {
+            flex-grow: 1;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .app-line {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+        }
+
+        .app-line.short { width: 50%; }
+        .app-line.medium { width: 80%; }
+
+        /* [개선] 힌지 이음새 물리적 깊이 데코레이터 추가 */
+        .hinge-left {
+            position: absolute;
+            right: -2px; top: 0; bottom: 0;
+            width: 4px;
+            background: linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0.02));
+            z-index: 10;
+        }
+
+        .hinge-right {
+            position: absolute;
+            left: -2px; top: 0; bottom: 0;
+            width: 4px;
+            background: linear-gradient(to left, rgba(0,0,0,0.1), rgba(0,0,0,0.02));
+            z-index: 10;
+        }
+
+        /* 6. 디자인 & 스펙 대비 섹션 */
+        .specs-section {
+            padding: 160px 24px;
+            background-color: var(--bg-white);
+        }
+
+        .specs-container {
+            max-width: 1024px;
+            margin: 0 auto;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .spec-contrast-card {
+            background-color: var(--bg-apple-grey);
+            padding: 60px 40px;
+            border-radius: 28px;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .spec-contrast-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .spec-badge {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-light-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            display: inline-block;
+        }
+
+        .spec-value {
+            font-size: 64px;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: var(--text-dark);
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+
+        .spec-detail {
+            font-size: 18px;
+            color: var(--text-gray);
+            line-height: 1.5;
+        }
+
+        /* 7. 대화면 생산성 시뮬레이터 섹션 */
+        .productivity-section {
+            background-color: var(--bg-apple-grey);
+            padding: 140px 24px;
+        }
+
+        .prod-container {
+            max-width: 1024px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .prod-title {
+            font-size: 44px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .prod-desc {
+            font-size: 18px;
+            color: var(--text-gray);
+            max-width: 600px;
+            margin: 0 auto 60px auto;
+            line-height: 1.6;
+        }
+
+        .split-mockup {
+            background: #ffffff;
+            border-radius: 24px;
+            border: 8px solid #e5e5ea;
+            max-width: 800px;
+            margin: 0 auto;
+            height: 450px;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.06);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .mock-app {
+            border-right: 1px solid #f5f5f7;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            transition: background-color 0.3s ease;
+        }
+
+        .mock-app:last-child {
+            border-right: none;
+        }
+
+        .mock-app:hover {
+            background-color: #fafafa;
+        }
+
+        .app-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background-color: var(--point-blue);
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .app-icon.notes { background-color: #f59e0b; }
+        .app-icon.safari { background-color: #10b981; }
+
+        .app-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .app-desc {
+            font-size: 13px;
+            color: var(--text-gray);
+            line-height: 1.5;
+        }
+
+        /* 8. CTA 섹션 */
+        .cta-section {
+            padding: 160px 24px;
+            text-align: center;
+            background-color: var(--bg-white);
+        }
+
+        .cta-title {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background-color: var(--text-dark);
+            color: var(--bg-white);
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 980px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.04);
+            background-color: #333336;
+        }
+
+        /* 모달 팝업 레이아웃 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--bg-white);
+            padding: 48px;
+            border-radius: 28px;
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        .modal-text {
+            font-size: 15px;
+            color: var(--text-gray);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .modal-input {
+            flex-grow: 1;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.15);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .modal-input:focus {
+            border-color: var(--point-blue);
+        }
+
+        .submit-btn {
+            background-color: var(--point-blue);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #147ce5;
+        }
+
+        .modal-close {
+            background: none;
+            color: var(--text-gray);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: underline;
+        }
+
+        /* 9. 푸터 스타일 */
+        .footer-section {
+            background-color: var(--bg-apple-grey);
+            color: var(--text-gray);
+            padding: 60px 24px;
+            font-size: 12px;
+            line-height: 1.8;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .footer-container {
+            max-width: 1024px;
+            margin: 0 auto;
+        }
+
+        .footer-text {
+            margin-bottom: 16px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .footer-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-dark);
+        }
+
+        /* 10. 반응형 레이아웃 대응 */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 40px; }
+            .hero-subtitle { font-size: 18px; }
+            .device-3d-scene { transform: scale(0.65); } /* 모바일에 맞춘 3D 스케일 보정 */
+            .specs-grid { grid-template-columns: 1fr; gap: 24px; }
+            .spec-value { font-size: 48px; }
+            .split-mockup { grid-template-columns: 1fr; height: auto; }
+            .mock-app { border-right: none; border-bottom: 1px solid #f5f5f7; }
+            .mock-app:last-child { border-bottom: none; }
+            .cta-title { font-size: 32px; }
+            .input-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 고정 글로벌 네비게이션 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <div class="nav-logo">Trifold</div>
+            <div class="nav-links"><a href="#cta">사전 예약하기</a></div>
+        </div>
+    </nav>
+
+    <!-- 1. 히어로 섹션 -->
+    <header class="hero-section">
+        <div class="fade-in-element">
+            <p class="hero-tag">새로운 패러다임</p>
+            <h1 class="hero-title">초월적 크기.<br>압도적 몰입.</h1>
+            <p class="hero-subtitle">완벽하게 얇은 완벽의 폼팩터</p>
+        </div>
+        <div class="scroll-indicator">
+            <span>아래로 스크롤하여 펼치기</span>
+            <svg width="12" height="18" viewBox="0 0 12 18" fill="none">
+                <path d="M6 1V17M6 17L1 12M6 17L11 12" stroke="#a1a1a6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    </header>
+
+    <!-- 2. 인터랙티브 스크롤 펼침 3D 섹션 (버그 대폭 전면 수정) -->
+    <section class="scroll-sticky-container">
+        <div class="sticky-viewport">
+            <h2 class="animation-title">더 넓게, 단숨에 펼쳐지는 감동</h2>
+            <div class="device-3d-scene">
+                <!-- 3D 디바이스 상호결속 앵커 영역 -->
+                <div class="trifold-container">
+                    
+                    <!-- 1) 좌측 정렬 대칭 패널 (센터 왼쪽에 긴밀 부착) -->
+                    <div class="trifold-body panel-left">
+                        <div class="hinge-left"></div>
+                        <div class="screen-wallpaper left-wall"></div>
+                        <div class="screen-content">
+                            <div class="app-header">
+                                <span>Workspace</span>
+                                <div class="app-status-dot"></div>
+                            </div>
+                            <div class="app-body">
+                                <div class="app-line"></div>
+                                <div class="app-line medium"></div>
+                                <div class="app-line short"></div>
+                            </div>
+                            <span style="font-size: 10px; color: var(--text-light-gray);">Left Panel 01</span>
+                        </div>
+                    </div>
+
+                    <!-- 2) 중앙 고정 패널 (모든 축의 원점) -->
+                    <div class="trifold-body panel-center">
+                        <div class="screen-wallpaper center-wall"></div>
+                        <div class="screen-content" style="opacity: 1;">
+                            <div class="app-header">
+                                <span>Trifold Center</span>
+                            </div>
+                            <div class="app-body">
+                                <div class="app-line medium"></div>
+                                <div class="app-line"></div>
+                                <div class="app-line short"></div>
+                            </div>
+                            <span style="font-size: 10px; color: var(--text-light-gray);">Center Anchor</span>
+                        </div>
+                    </div>
+
+                    <!-- 3) 우측 정렬 대칭 패널 (센터 오른쪽에 긴밀 부착) -->
+                    <div class="trifold-body panel-right">
+                        <div class="hinge-right"></div>
+                        <div class="screen-wallpaper right-wall"></div>
+                        <div class="screen-content">
+                            <div class="app-header">
+                                <span>Entertainment</span>
+                                <div class="app-status-dot" style="background-color: #f59e0b;"></div>
+                            </div>
+                            <div class="app-body">
+                                <div class="app-line short"></div>
+                                <div class="app-line medium"></div>
+                                <div class="app-line"></div>
+                            </div>
+                            <span style="font-size: 10px; color: var(--text-light-gray);">Right Panel 03</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 스펙 & 엔지니어링 대조 섹션 -->
+    <section class="specs-section">
+        <div class="specs-container">
+            <h2 class="fade-in-element" style="font-size: 40px; font-weight: 700; text-align: center; letter-spacing: -0.02em;">기술이 선사하는 가벼운 자유</h2>
+            <div class="specs-grid">
+                <!-- 두께 비교 카드 -->
+                <div class="spec-contrast-card fade-in-element">
+                    <span class="spec-badge">THICKNESS</span>
+                    <div class="spec-value">고작 12.9mm</div>
+                    <p class="spec-detail">두 번을 완벽하게 접고도 주머니 속에 조용히 밀착되는 극적인 슬림함. 스마트폰 두께의 한계를 과감히 넘어섭니다.</p>
+                </div>
+                <!-- 무게 비교 카드 -->
+                <div class="spec-contrast-card fade-in-element">
+                    <span class="spec-badge">WEIGHT</span>
+                    <div class="spec-value">단 309g</div>
+                    <p class="spec-detail">세 개의 완전한 화면을 손바닥 위에 부드럽게 올려놓는 기술적 승리. 손끝에서 느껴지는 차원이 다른 가벼움을 만나보세요.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 생산성 시뮬레이션 영역 -->
+    <section class="productivity-section">
+        <div class="prod-container">
+            <h2 class="prod-title fade-in-element">동시에 실행되는 흐름.</h2>
+            <p class="prod-desc fade-in-element">10인치 오피스가 주는 무한함. 3개의 독립된 영역에서 지연 없이 직관적인 멀티태스킹이 일어납니다.</p>
+            
+            <!-- 3분할 데스크톱 목업 -->
+            <div class="split-mockup fade-in-element">
+                <!-- 앱 1 -->
+                <div class="mock-app">
+                    <div class="app-icon">W</div>
+                    <h3 class="app-name">Word Processor</h3>
+                    <p class="app-desc">강력하고 정교한 문서 편집기. 넓은 영역을 활용해 텍스트와 서식을 시원하게 확인하세요.</p>
+                </div>
+                <!-- 앱 2 -->
+                <div class="mock-app">
+                    <div class="app-icon notes">N</div>
+                    <h3 class="app-name">Memo & Idea</h3>
+                    <p class="app-desc">스쳐 지나가는 영감을 기록하기에 이상적인 공간. 단어의 호흡을 가장 편안하게 구성합니다.</p>
+                </div>
+                <!-- 앱 3 -->
+                <div class="mock-app">
+                    <div class="app-icon safari">S</div>
+                    <h3 class="app-name">Browser</h3>
+                    <p class="app-desc">끊김 없이 정보의 바다를 서핑하는 탐색 영역. 대화면과 어우러져 완벽한 데스크톱 뷰를 제시합니다.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 액션 유도(CTA) 섹션 -->
+    <section class="cta-section" id="cta">
+        <h2 class="cta-title fade-in-element">직접 마주하세요.</h2>
+        <button class="cta-btn fade-in-element" id="openModal">사전 예약 참여하기</button>
+    </section>
+
+    <!-- 마이크로 인터랙션 모달 팝업 구조 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <h3 class="modal-title">미래를 소유할 준비</h3>
+            <p class="modal-text">Trifold의 혁신 소식과 예약 구매 론칭에 맞춘 한정 혜택 안내를 가장 먼저 보내드리겠습니다.</p>
+            <div class="input-group">
+                <input type="email" placeholder="이메일 주소를 입력하세요" class="modal-input" id="subscriberEmail">
+                <button class="submit-btn" id="submitBtn">구독 신청</button>
+            </div>
+            <button class="modal-close" id="closeModal">돌아가기</button>
+        </div>
+    </div>
+
+    <!-- 6. 애플 감성의 심플 푸터 -->
+    <footer class="footer-section">
+        <div class="footer-container">
+            <p class="footer-text">본 랜딩 페이지는 "I AM" 개인 포트폴리오 웹사이트 제작 실습용 예시이며 삼성이 공식 공급하는 디자인 명세가 아닌 크리에이티브 시뮬레이션 영역입니다.</p>
+            <p>© 2026 Trifold Project. Designed inspired by Apple’s finest web design guidelines.</p>
+            <div class="footer-links">
+                <a href="#">개인정보처리방침</a>
+                <a href="#">사용자 가이드</a>
+                <a href="#">도움말</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 스크롤 3D 모션 제어 스크립트 -->
+    <script>
+        // 1. 공통 스크롤 페이드인 인터랙션 제어
+        const fadeElements = document.querySelectorAll('.fade-in-element');
+        const observerOptions = {
+            root: null,
+            threshold: 0.1,
+            rootMargin: "0px 0px -60px 0px"
+        };
+
+        const scrollObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        fadeElements.forEach(el => scrollObserver.observe(el));
+
+
+        // 2. [개선] 정밀 3D 스크롤 동기화 수식 및 트랜지션 로직
+        const stickyContainer = document.querySelector('.scroll-sticky-container');
+        const panelLeft = document.querySelector('.panel-left');
+        const panelRight = document.querySelector('.panel-right');
+        const wallpapers = document.querySelectorAll('.screen-wallpaper');
+        const contents = document.querySelectorAll('.screen-content');
+
+        window.addEventListener('scroll', () => {
+            const containerRect = stickyContainer.getBoundingClientRect();
+            const totalScrollHeight = containerRect.height - window.innerHeight;
+            
+            let progress = -containerRect.top / totalScrollHeight;
+            progress = Math.max(0, Math.min(1, progress));
+
+            // 접혔을 때 각도 150도 -> 완전히 펼쳐졌을 때 0도 평면
+            const angleLeft = 150 - (progress * 150);
+            const angleRight = -150 + (progress * 150);
+
+            // [개선] 힌지 정밀 결속 회전 적용
+            panelLeft.style.transform = `rotateY(${angleLeft}deg)`;
+            panelRight.style.transform = `rotateY(${angleRight}deg)`;
+
+            // 스크롤 상황에 맞춘 배경 밝기 세부 보정 (접혀있을 땐 어둡고 펼쳐지면 원래 색상 복귀)
+            const opacityVal = 0.15 + (progress * 0.85);
+            wallpapers.forEach(wp => {
+                wp.style.opacity = opacityVal;
+            });
+
+            // 화면 내부 텍스트 콘텐츠가 기기 크기에 맞춰 부드럽게 페이드인 노출
+            contents.forEach(content => {
+                if (progress > 0.5) {
+                    content.style.opacity = (progress - 0.5) * 2;
+                } else {
+                    content.style.opacity = 0;
+                }
+            });
+        });
+
+
+        // 3. CTA 마이크로 인터랙션 - 팝업 모달 제어
+        const openModalBtn = document.getElementById('openModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const submitBtn = document.getElementById('submitBtn');
+        const emailInput = document.getElementById('subscriberEmail');
+
+        openModalBtn.addEventListener('click', () => {
+            modalOverlay.classList.add('active');
+        });
+
+        const closeModal = () => {
+            modalOverlay.classList.remove('active');
+            emailInput.value = '';
+        };
+
+        closeModalBtn.addEventListener('click', closeModal);
+        
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+
+        submitBtn.addEventListener('click', () => {
+            const emailValue = emailInput.value.trim();
+            if (emailValue === "") {
+                emailInput.style.borderColor = "red";
+                setTimeout(() => emailInput.style.borderColor = "rgba(0,0,0,0.15)", 1000);
+                return;
+            }
+            submitBtn.textContent = "완료되었습니다";
+            submitBtn.style.backgroundColor = "#10b981";
+            setTimeout(() => {
+                closeModal();
+                submitBtn.textContent = "구독 신청";
+                submitBtn.style.backgroundColor = "var(--point-blue)";
+            }, 1200);
+        });
+    </script>
+</body>
+</html>
